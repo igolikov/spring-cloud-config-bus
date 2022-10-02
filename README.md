@@ -1,2 +1,4 @@
 # spring-cloud-config-bus
-an example of Spring Cloud config update via Spring bus
+```
+curl --location --request POST 'http://localhost:8888/monitor' --header 'X-Github-Event: push' --header 'Content-Type: application/json' --data-raw '{"commits": [{"modified": ["application.properties"] }]}'
+```

@@ -1,0 +1,63 @@
+version: '3.6'
+services:
+  zookeeper:
+    container_name: example.zookeeper
+    image: wurstmeister/zookeeper
+    ports:
+      - 2181:2181
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    networks:
+      - example.network
+  kafka:
+    container_name: example.kafka
+    image: wurstmeister/kafka:latest
+    ports:
+      - 9092:9092
+      - 9091:9091
+    environment:
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9092,OUTSIDE://localhost:9091
+      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9091
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_group_min_session_timeout_ms: 1000
+    networks:
+      - example.network
+    depends_on:
+      - zookeeper
+  server:
+    container_name: server
+    image: server
+    ports:
+      - 8888:8888
+    networks:
+      - example.network
+    depends_on:
+      - kafka
+  client:
+    container_name: client
+    image: client
+    ports:
+      - 8111:8111
+    networks:
+      - example.network
+    depends_on:
+      - kafka
+      - server
+  client2:
+    container_name: client2
+    image: client
+    ports:
+      - 8112:8111
+    networks:
+      - example.network
+    depends_on:
+      - kafka
+      - server
+networks:
+  example.network:
+    name: example.services.network
